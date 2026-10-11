@@ -115,7 +115,7 @@ const icons: Record<string, string> = {
       <div class="about-card">
         {aboutPhoto
           ? <a class="avatar" href={url(lang, '/about')} tabindex="-1" aria-hidden="true"><img src={asset(aboutPhoto)} alt="" loading="lazy" /></a>
-          : <div class="ph avatar" aria-hidden="true">GS</div>}
+          : <div class="ph avatar" aria-hidden="true">{site.logoTextAlt.slice(0, 2)}</div>}
         <div>
           <h2>{t(lang, 'aboutTitle')}</h2>
           <p>{t(lang, 'homeAboutText')}</p>
