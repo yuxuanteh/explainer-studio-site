@@ -1,0 +1,25 @@
+{
+  "facts": [
+    {
+      "question": "地球有多少岁？",
+      "answer": "大约 45.4 亿年。科学家用放射性定年法测量陨石和地球最古老的矿物，推算出这个年龄。",
+      "questionEn": "How old is the Earth?",
+      "answerEn": "About 4.54 billion years, worked out by radiometric dating of meteorites and Earth's oldest minerals.",
+      "icon": "question"
+    },
+    {
+      "question": "光从太阳到地球要多久？",
+      "answer": "大约 8 分 20 秒。太阳和地球平均相距约 1.5 亿公里。",
+      "questionEn": "How long does sunlight take to reach Earth?",
+      "answerEn": "About 8 minutes 20 seconds, across an average distance of roughly 150 million km.",
+      "icon": "wave"
+    },
+    {
+      "question": "石头会浮在水上吗？",
+      "answer": "会！浮石（Pumice）是火山喷发时形成的岩石，里面充满气泡，密度比水还低。",
+      "questionEn": "Can a rock float?",
+      "answerEn": "Yes! Pumice forms during volcanic eruptions. It is so full of gas bubbles that it is less dense than water.",
+      "icon": "water"
+    }
+  ]
+}

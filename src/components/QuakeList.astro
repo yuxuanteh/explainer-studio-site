@@ -1,0 +1,28 @@
+---
+import { t, type Lang } from '../lib/i18n';
+interface Props { lang: Lang; limit?: number }
+const { lang, limit = 6 } = Astro.props;
+---
+<div class="qlist-wrap" data-lang={lang} data-limit={limit}
+  data-depth={t(lang, 'depth')} data-error={t(lang, 'loadError')} data-empty={t(lang, 'noQuakes')}>
+  <ul class="qlist" aria-live="polite"><li class="qstatus">{t(lang, 'loading')}</li></ul>
+  <p class="qsource">{t(lang, 'dataSource')} · {t(lang, 'pastDay45')}</p>
+</div>
+
+
+
+<script>
+  import { fetchQuakes, quakeItemHtml } from '../lib/quakes';
+  document.querySelectorAll<HTMLElement>('.qlist-wrap').forEach(async (el) => {
+    const ul = el.querySelector('ul')!;
+    const { lang = 'zh', limit = '6', depth = '', error = '', empty = '' } = el.dataset;
+    try {
+      const quakes = (await fetchQuakes('day45')).slice(0, Number(limit));
+      ul.innerHTML = quakes.length
+        ? quakes.map((q) => quakeItemHtml(q, lang, depth)).join('')
+        : `<li class="qstatus">${empty}</li>`;
+    } catch {
+      ul.innerHTML = `<li class="qstatus">${error}</li>`;
+    }
+  });
+</script>

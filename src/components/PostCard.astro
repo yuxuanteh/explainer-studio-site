@@ -1,0 +1,31 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { categories, formatDate, readingTime, t, url, asset, type Lang } from '../lib/i18n';
+import { slugOf } from '../lib/twins';
+interface Props { post: CollectionEntry<'posts'>; lang: Lang }
+const { post, lang } = Astro.props;
+const d = post.data;
+const cat = categories[d.category];
+const href = url(d.lang, `/blog/${slugOf(post)}`);
+const mins = readingTime(post.body || '');
+---
+<a class="pcard" href={href} data-category={d.category}>
+  {d.cover
+    ? <img src={asset(d.cover)} alt={d.coverAlt || ''} loading="lazy" />
+    : <div class="ph cover-ph" aria-hidden="true">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M2 20l6-9 4 5 3-4 7 8z"/><circle cx="17" cy="6" r="2"/></svg>
+      </div>}
+  <span class="tag">{cat[lang]}{d.youtubeId ? ` · ${t(lang, 'videoWriteup')}` : ''}{lang === 'en' && d.lang === 'zh' ? ' · 中文' : ''}</span>
+  <span class="title" lang={d.lang === 'zh' ? 'zh-Hans' : 'en'}>{d.title}</span>
+  {d.description && <span class="desc">{d.description}</span>}
+  <span class="meta">{formatDate(d.date, lang)} · {mins} {t(lang, 'minRead')}</span>
+</a>
+<style>
+  .pcard { text-decoration: none; color: var(--fg); display: flex; flex-direction: column; gap: 12px; }
+  .pcard:hover { opacity: 1; }
+  .pcard:hover .title { color: var(--accent); }
+  .pcard img, .cover-ph { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 12px; }
+  .title { font-family: var(--font-cjk-serif); font-weight: 700; font-size: 22px; line-height: 1.45; transition: color .2s; }
+  .desc { font-size: 15px; line-height: 1.75; color: var(--muted); }
+  .meta { font-size: 13px; color: var(--muted); }
+</style>

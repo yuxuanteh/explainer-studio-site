@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import PostCard from '../components/PostCard.astro';
+import { getPostsForLang } from '../lib/posts';
+import { t, categories, type Lang } from '../lib/i18n';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const { posts, fallback } = await getPostsForLang(lang);
+---
+<Base lang={lang} title={t(lang, 'blog')} active="blog">
+  <section class="sec-light section">
+    <div class="wrap">
+      <div class="sec-head">
+        <div><h1 class="page-title">{t(lang, 'blog')}</h1><p>{t(lang, 'blogSub')}</p></div>
+        <div class="chips" role="group" aria-label="Category">
+          <button class="chip" type="button" data-filter="all" aria-pressed="true">{t(lang, 'all')}</button>
+          {(Object.keys(categories) as (keyof typeof categories)[]).map((k) =>
+            <button class="chip" type="button" data-filter={k} aria-pressed="false">{categories[k][lang]}</button>)}
+        </div>
+      </div>
+      {fallback && <p class="note">{t(lang, 'enFallback')}</p>}
+      {posts.length
+        ? <div class="grid-wide" id="post-grid">{posts.map((p) => <PostCard post={p} lang={lang} />)}</div>
+        : <p class="note">{t(lang, 'noPosts')}</p>}
+      <p class="note" id="empty-filter" hidden>{t(lang, 'noPosts')}</p>
+    </div>
+  </section>
+</Base>
+<style>
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .note { color: var(--muted); }
+</style>
+<script>
+  const chips = document.querySelectorAll<HTMLButtonElement>('.chips .chip');
+  chips.forEach((c) => c.addEventListener('click', () => {
+    chips.forEach((x) => x.setAttribute('aria-pressed', String(x === c)));
+    const f = c.dataset.filter;
+    let shown = 0;
+    document.querySelectorAll<HTMLElement>('#post-grid [data-category]').forEach((card) => {
+      card.hidden = f !== 'all' && card.dataset.category !== f;
+      if (!card.hidden) shown++;
+    });
+    const empty = document.getElementById('empty-filter');
+    if (empty) empty.hidden = shown > 0;
+  }));
+</script>

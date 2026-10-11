@@ -1,0 +1,58 @@
+# 自动翻译：你发布（不是草稿）一篇文章或测验后，如果它还没有另一种语言的版本，
+# Claude 会帮你翻译，存成「草稿」。你在 Pages CMS 检查一下，取消勾选「草稿」再保存，就会发布。
+# 翻译规则写在 scripts/translate-prompt.md，可以自己改。
+# 需要在 GitHub 仓库的 Settings → Secrets 里放 CLAUDE_CODE_OAUTH_TOKEN（用 claude setup-token 产生）。
+name: Auto-translate posts & quizzes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/content/posts/**'
+      - 'src/content/quizzes/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: translate
+  cancel-in-progress: false
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    env:
+      HAS_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - id: find
+        run: node scripts/find-missing-twins.mjs
+
+      - if: steps.find.outputs.count != '0' && env.HAS_TOKEN != 'true'
+        run: echo "::warning::Some content needs translating, but the CLAUDE_CODE_OAUTH_TOKEN secret is not set."
+
+      - name: Translate with Claude
+        if: steps.find.outputs.count != '0' && env.HAS_TOKEN == 'true'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          PAIRS: ${{ steps.find.outputs.pairs }}
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          { cat scripts/translate-prompt.md; echo; echo "$PAIRS"; } > "$RUNNER_TEMP/prompt.md"
+          claude -p "$(cat "$RUNNER_TEMP/prompt.md")" --allowedTools "Read,Write,Glob" --output-format text
+
+      - name: Save translations
+        if: steps.find.outputs.count != '0' && env.HAS_TOKEN == 'true'
+        run: |
+          git add src/content/posts src/content/quizzes
+          if git diff --cached --quiet; then echo "::error::Claude did not write any file."; exit 1; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Auto-translate (draft): $(git diff --cached --name-only | xargs -n1 basename | tr '\n' ' ')"
+          git push

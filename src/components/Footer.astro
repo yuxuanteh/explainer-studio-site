@@ -1,0 +1,31 @@
+---
+import site from '../data/site.json';
+import { t, url, type Lang } from '../lib/i18n';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const year = new Date().getFullYear();
+---
+<footer class="footer sec-darker">
+  <div class="wrap footer-inner">
+    <div class="brand">
+      <span class="name">{t(lang, 'siteName')}</span>
+      <span class="copy">© {year}</span>
+    </div>
+    <nav class="links" aria-label="Footer">
+      <a href={url(lang, '/blog')}>{t(lang, 'blog')}</a>
+      <a href={url(lang, '/about')}>{t(lang, 'about')}</a>
+      <a href={site.youtubeUrl}>YouTube</a>
+      {site.instagramUrl && <a href={site.instagramUrl}>Instagram</a>}
+      {site.linkedinUrl && <a href={site.linkedinUrl}>LinkedIn</a>}
+      {site.email && <a href={`mailto:${site.email}`}>Email</a>}
+    </nav>
+  </div>
+</footer>
+<style>
+  .footer { border-top: 1px solid var(--dark-border); }
+  .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding-top: 24px; padding-bottom: 24px; font-size: 14px; color: var(--dark-muted); }
+  .brand { display: flex; gap: 12px; flex-wrap: wrap; }
+  .name { color: var(--dark-text); font-weight: 700; }
+  .links { display: flex; flex-wrap: wrap; }
+  .links a { padding: 12px; color: var(--gold); text-decoration: none; }
+</style>

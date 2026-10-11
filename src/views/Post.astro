@@ -1,0 +1,175 @@
+---
+import Base from '../layouts/Base.astro';
+import { render, type CollectionEntry } from 'astro:content';
+import site from '../data/site.json';
+import { getPosts } from '../lib/posts';
+import { slugOf, findTwin } from '../lib/twins';
+import { categories, formatDate, readingTime, t, url, asset, type Lang } from '../lib/i18n';
+interface Props { post: CollectionEntry<'posts'>; lang: Lang }
+const { post, lang } = Astro.props;
+const d = post.data;
+const { Content, headings } = await render(post);
+const toc = headings.filter((h) => h.depth === 2);
+const related = (await getPosts(d.lang)).filter((p) => p.id !== post.id && p.data.category === d.category).slice(0, 3);
+const mins = readingTime(post.body || '');
+const cat = categories[d.category];
+// 另一种语言的版本（有的话，中文/EN 按钮直接跳过去）
+const twin = findTwin(post, await getPosts());
+const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
+const altHref = twin ? url(otherLang, `/blog/${slugOf(twin)}`) : url(otherLang, '/blog');
+---
+<Base lang={lang} title={d.title} description={d.description} active="blog" image={d.cover} altHref={altHref}>
+  <div class="sec-light">
+    <div class="wrap layout">
+      <article class="article" lang={d.lang === 'zh' ? 'zh-Hans' : 'en'}>
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <a href={url(lang, '/blog')}>{t(lang, 'blog')}</a><span aria-hidden="true">›</span><span>{cat[lang]}</span>
+        </nav>
+        <header class="head">
+          <span class="tag">{cat[lang]}{d.youtubeId ? ` · ${t(lang, 'videoWriteup')}` : ''}</span>
+          <h1>{d.title}</h1>
+          {d.description && <p class="dek">{d.description}</p>}
+          <div class="meta"><span>{site.author}</span><span>{formatDate(d.date, lang)}</span><span>{mins} {t(lang, 'minRead')}</span>{twin && <a class="twin" href={altHref} lang={otherLang}>{t(lang, 'readOtherLang')}</a>}</div>
+        </header>
+        {d.cover && <img class="cover" src={asset(d.cover)} alt={d.coverAlt || ''} />}
+        {toc.length > 1 && (
+          /* 手机上侧栏会跑到文章最后，所以在文章开头放一份目录（只在窄屏显示） */
+          <details class="toc-mobile" open>
+            <summary>{t(lang, 'toc')}</summary>
+            <nav aria-label={t(lang, 'toc')}>{toc.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}</nav>
+          </details>
+        )}
+        <div class="prose"><Content /></div>
+        {d.tags.length > 0 && <div class="tags">{d.tags.map((tag) => <span>#{tag}</span>)}</div>}
+      </article>
+
+      <aside class="side">
+        {d.youtubeId && (
+          <div class="video-box sec-dark">
+            <div class="embed">
+              <iframe src={`https://www.youtube-nocookie.com/embed/${d.youtubeId}`} title={d.title} loading="lazy"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div class="vb-body">
+              <span class="tag">{t(lang, 'thisVideo')}</span>
+              <a class="btn btn-gold" href={`https://www.youtube.com/watch?v=${d.youtubeId}`}>{t(lang, 'watchOnYoutube')}</a>
+            </div>
+          </div>
+        )}
+        {!d.youtubeId && (
+          <div class="video-box sec-dark">
+            <div class="vb-body">
+              <span class="tag">YouTube</span>
+              <span class="vb-title">{t(lang, 'postVideoBox')}</span>
+              <a class="btn btn-gold" href={site.youtubeUrl}>{t(lang, 'subscribe')}</a>
+            </div>
+          </div>
+        )}
+        {toc.length > 1 && (
+          <nav class="side-list toc-side" aria-label={t(lang, 'toc')}>
+            <span class="side-title">{t(lang, 'toc')}</span>
+            {toc.map((h) => <a href={`#${h.slug}`}>{h.text}</a>)}
+          </nav>
+        )}
+        {related.length > 0 && (
+          <nav class="side-list" aria-label={t(lang, 'related')}>
+            <span class="side-title">{t(lang, 'related')}</span>
+            {related.map((p) => <a href={url(p.data.lang, `/blog/${slugOf(p)}`)}>{p.data.title}</a>)}
+          </nav>
+        )}
+      </aside>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .layout { display: flex; flex-wrap: wrap; gap: 56px; align-items: flex-start; padding-top: 48px; padding-bottom: 96px; }
+  .article { flex: 999 1 560px; min-width: 0; max-width: 760px; display: flex; flex-direction: column; gap: 28px; }
+  .crumbs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; color: var(--muted); }
+  .crumbs a { color: var(--muted); padding: 8px 0; }
+  .head { display: flex; flex-direction: column; gap: 14px; }
+  .head h1 { margin: 0; font-family: var(--font-cjk-serif); font-weight: 900; font-size: clamp(30px, 5vw, 50px); line-height: 1.3; color: #1A160C; }
+  .dek { margin: 0; font-family: var(--font-cjk-serif); font-weight: 500; font-size: 20px; line-height: 1.75; color: var(--muted); }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 14px; color: #6E6350; }
+  .meta .twin { color: var(--accent); font-weight: 700; text-decoration: none; }
+  .meta .twin:hover { text-decoration: underline; }
+  .cover { width: 100%; border-radius: 12px; border: 1px solid var(--line); }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .tags span { background: #ECE5D4; color: #4A4130; padding: 8px 14px; border-radius: 999px; font-size: 14px; }
+
+  .side { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 28px; position: sticky; top: 96px; }
+  @media (max-width: 900px) { .side { position: static; } }
+  /* 文章开头的目录：只在侧栏掉到文章下面的窄屏显示 */
+  .toc-mobile { display: none; background: var(--paper-card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
+  .toc-mobile summary { cursor: pointer; font-size: 13px; font-weight: 700; letter-spacing: .1em; color: var(--accent); }
+  .toc-mobile nav { display: flex; flex-direction: column; margin-top: 8px; }
+  .toc-mobile nav a { color: var(--paper-body); text-decoration: none; padding: 8px 0; font-size: 15px; line-height: 1.5; border-top: 1px solid var(--line); }
+  @media (max-width: 980px) {
+    .layout { flex-direction: column; align-items: stretch; }
+    .article, .side { flex: none; width: 100%; max-width: 760px; }
+    .toc-mobile { display: block; }
+    .side .toc-side { display: none; }
+  }
+  .video-box { border-radius: 14px; overflow: hidden; }
+  .embed { position: relative; aspect-ratio: 16 / 9; }
+  .embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .vb-body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+  .vb-title { font-weight: 700; font-size: 17px; line-height: 1.5; }
+  .side-list { display: flex; flex-direction: column; }
+  .side-title { font-size: 12px; font-weight: 700; letter-spacing: .1em; color: var(--accent); padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .side-list a { color: var(--paper-body); text-decoration: none; padding: 10px 0; font-size: 15px; line-height: 1.5; }
+  .side-list a:hover { color: var(--accent); }
+
+  /* 文章正文排版 */
+  .prose { font-size: 18px; line-height: 1.95; color: var(--paper-body); }
+  .prose :global(p) { margin: 0 0 22px; }
+  .prose :global(> p:first-child::first-letter) { float: left; font-family: var(--font-cjk-serif); font-weight: 900; font-size: 3.2em; line-height: 1; color: var(--gold-deep); margin: 6px 12px 0 0; }
+  .prose :global(h2) { margin: 40px 0 16px; font-family: var(--font-cjk-serif); font-weight: 700; font-size: 27px; color: #1A160C; scroll-margin-top: 90px; }
+  .prose :global(h3) { margin: 32px 0 12px; font-family: var(--font-cjk-serif); font-weight: 700; font-size: 22px; color: #1A160C; }
+  .prose :global(blockquote) { margin: 28px 0; padding: 18px 24px; border-left: 4px solid #D9A60B; background: var(--paper-card); border-radius: 0 10px 10px 0; font-family: var(--font-cjk-serif); font-weight: 500; font-size: 21px; line-height: 1.7; color: #1A160C; }
+  .prose :global(blockquote p) { margin: 0; }
+  .prose :global(blockquote p + p) { margin-top: 12px; }
+  /* 小知识框：> **标签**：内容（见 src/lib/rehype-blog.mjs） */
+  .prose :global(blockquote.callout) { font-family: var(--font-sans); font-weight: 400; font-size: 16.5px; line-height: 1.85; color: var(--paper-body); background: #FBF6E8; border: 1px solid #E8D9AE; border-left: 4px solid #D9A60B; border-radius: 0 12px 12px 0; padding: 18px 22px; }
+  .prose :global(.callout-label) { display: block; margin-bottom: 6px; font-family: var(--font-display); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-deep); }
+  .prose :global(blockquote.callout ul), .prose :global(blockquote.callout ol) { margin: 8px 0 0; }
+  /* 参考资料编号 */
+  .prose :global(sup.cite) { font-size: .68em; line-height: 0; margin-left: 1px; }
+  .prose :global(sup.cite a) { text-decoration: none; font-weight: 700; padding: 0 1px; }
+  .prose :global(sup.cite + sup.cite)::before { content: ','; color: var(--muted); }
+  .prose :global(ol.refs) { font-size: 14.5px; line-height: 1.7; color: var(--muted); padding-left: 1.6em; }
+  .prose :global(ol.refs li) { margin-bottom: 8px; scroll-margin-top: 90px; overflow-wrap: anywhere; }
+  .prose :global(ol.refs li:target) { background: #FBF0C9; border-radius: 6px; }
+  .prose :global(img) { border-radius: 10px; margin: 8px 0; }
+  /* 文章图片（大小/位置由图片说明里的 #小 #中 #左 #右 决定，见 src/lib/rehype-figures.mjs） */
+  .prose :global(.fig) { margin: 30px auto; width: 100%; }
+  .prose :global(.fig img) { width: 100%; height: auto; margin: 0; border: 1px solid var(--line); }
+  .prose :global(.fig figcaption) { margin-top: 10px; font-size: 14px; line-height: 1.6; color: var(--muted); text-align: center; }
+  .prose :global(.fig-medium) { width: 65%; }
+  .prose :global(.fig-small) { width: 40%; }
+  .prose :global(.fig-left), .prose :global(.fig-right) { width: 45%; margin-top: 6px; margin-bottom: 18px; }
+  .prose :global(.fig-left) { float: left; margin-right: 28px; }
+  .prose :global(.fig-right) { float: right; margin-left: 28px; }
+  .prose :global(.fig-left.fig-small), .prose :global(.fig-right.fig-small) { width: 33%; }
+  .prose :global(.fig-left.fig-medium), .prose :global(.fig-right.fig-medium) { width: 55%; }
+  .prose :global(.fig-left figcaption), .prose :global(.fig-right figcaption) { text-align: left; }
+  .prose :global(h2), .prose :global(h3), .prose :global(hr) { clear: both; }
+  .prose::after { content: ''; display: block; clear: both; }
+  .prose :global(a) { color: var(--gold-deep); text-underline-offset: 3px; }
+  .prose :global(ul), .prose :global(ol) { padding-left: 1.4em; margin: 0 0 22px; }
+  .prose :global(li) { margin-bottom: 6px; }
+  .prose :global(strong) { color: #1A160C; }
+  .prose :global(hr) { border: 0; border-top: 1px solid var(--line); margin: 36px 0; }
+  .prose :global(table) { width: 100%; border-collapse: collapse; font-size: 16px; display: block; overflow-x: auto; }
+  .prose :global(th), .prose :global(td) { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  .prose :global(table) { margin: 26px 0; line-height: 1.6; }
+  .prose :global(th) { background: #EFE6CF; font-weight: 700; color: #1A160C; }
+  .prose :global(tr:nth-child(even) td) { background: rgba(255, 255, 255, .5); }
+  @media (max-width: 640px) {
+    .prose { font-size: 17px; }
+    /* 手机屏幕窄：靠左/靠右的图片改回整行，避免文字被挤成一条 */
+    .prose :global(.fig.fig-left), .prose :global(.fig.fig-right) { float: none; width: 100%; margin: 26px 0; }
+    .prose :global(.fig.fig-small) { width: 70%; margin-left: auto; margin-right: auto; }
+    .prose :global(.fig.fig-medium) { width: 100%; }
+  }
+</style>

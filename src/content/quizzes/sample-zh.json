@@ -1,0 +1,21 @@
+{
+  "title": "示范测验",
+  "slug": "sample",
+  "description": "看看测验长什么样。",
+  "lang": "zh",
+  "order": 1,
+  "youtubeId": "",
+  "draft": false,
+  "questions": [
+    {
+      "question": "地球大约多少岁？",
+      "options": [
+        "4500 年",
+        "45 亿年",
+        "4500 亿年"
+      ],
+      "answer": 2,
+      "explanation": "放射性定年法测出大约 45.4 亿年。"
+    }
+  ]
+}

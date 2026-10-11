@@ -1,0 +1,44 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { switchLangPath, asset, t, type Lang } from '../lib/i18n';
+// altHref：另一种语言的对应页面（例如文章的英文版）；没给就用同一路径
+interface Props { lang: Lang; title?: string; description?: string; active?: string; image?: string; altHref?: string }
+const { lang, title, description, active, image, altHref } = Astro.props;
+const siteName = t(lang, 'siteName');
+const fullTitle = title ? `${title} · ${siteName}` : siteName;
+const desc = description || t(lang, 'siteDescription');
+const path = Astro.url.pathname;
+// 分享连结时的预览图：文章封面，没有就用频道 Logo
+const ogImage = new URL(asset(image || 'og-default.png'), Astro.site).href;
+---
+<!doctype html>
+<html lang={lang === 'zh' ? 'zh-Hans' : 'en'}>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={desc} />
+  <!-- 网站图标：金钉钉进岩层（频道 Logo，来源 youtube/brand/logo/final） -->
+  <link rel="icon" href={asset('favicon.ico')} sizes="32x32" />
+  <link rel="icon" type="image/svg+xml" href={asset('favicon.svg')} />
+  <link rel="apple-touch-icon" href={asset('apple-touch-icon.png')} />
+  <meta name="theme-color" content="#1A160C" />
+  <link rel="alternate" hreflang="zh-Hans" href={new URL(lang === 'zh' ? path : (altHref ?? switchLangPath(path, 'zh')), Astro.site)} />
+  <link rel="alternate" hreflang="en" href={new URL(lang === 'en' ? path : (altHref ?? switchLangPath(path, 'en')), Astro.site)} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={desc} />
+  <meta property="og:image" content={ogImage} />
+  <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Manrope:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <slot name="head" />
+</head>
+<body>
+  <Nav lang={lang} active={active} altHref={altHref} />
+  <main><slot /></main>
+  <Footer lang={lang} />
+</body>
+</html>

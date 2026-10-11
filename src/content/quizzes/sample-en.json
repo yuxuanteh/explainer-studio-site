@@ -1,0 +1,21 @@
+{
+  "title": "Sample quiz",
+  "slug": "sample",
+  "description": "See what a quiz looks like.",
+  "lang": "en",
+  "order": 1,
+  "youtubeId": "",
+  "draft": false,
+  "questions": [
+    {
+      "question": "Roughly how old is the Earth?",
+      "options": [
+        "4,500 years",
+        "4.5 billion years",
+        "450 billion years"
+      ],
+      "answer": 2,
+      "explanation": "Radiometric dating gives about 4.54 billion years."
+    }
+  ]
+}

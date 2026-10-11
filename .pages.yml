@@ -1,0 +1,701 @@
+# Pages CMS 设定：决定你在 app.pagescms.org 编辑器里看到哪些栏目和输入框。
+media:
+  input: public/uploads
+  output: /uploads
+
+content:
+  # ===== 博客文章 =====
+  - name: posts
+    label: 博客文章
+    type: collection
+    path: src/content/posts
+    format: yaml-frontmatter
+    filename: "{year}-{month}-{day}-{fields.slug}-{fields.lang}.md"
+    view:
+      primary: title
+      fields: [title, date, category, lang, draft]
+      sort: date
+      order: desc
+    fields:
+      - name: title
+        label: 标题
+        type: string
+        required: true
+      - name: slug
+        label: 网址名称
+        description: 英文小写，单词之间用 - 连接，例如 rock-cycle。写英文版时，填跟中文版一模一样的网址名称，两篇就会自动互相连接。
+        type: string
+        required: true
+      - name: description
+        label: 摘要（一两句）
+        type: text
+      - name: date
+        label: 发布日期
+        type: date
+        required: true
+      - name: category
+        label: 分类
+        type: select
+        default: geo
+        options:
+          values:
+            - { name: geo, label: 地质与地震 }
+            - { name: life, label: 生活 }
+            - { name: travel, label: 旅行 }
+      - name: lang
+        label: 语言
+        type: select
+        default: zh
+        options:
+          values:
+            - { name: zh, label: 中文 }
+            - { name: en, label: English }
+      - name: cover
+        label: 封面图
+        type: image
+      - name: coverAlt
+        label: 封面图说明（给看不到图片的读者）
+        type: string
+      - name: youtubeId
+        label: 对应的 YouTube 视频 ID
+        description: 视频网址 watch?v= 后面那一串，例如 dQw4w9WgXcQ。没有就留空。
+        type: string
+      - name: tags
+        label: 标签
+        type: string
+        list: true
+      - name: draft
+        label: 草稿（打勾就不会出现在网站上）
+        type: boolean
+        default: false
+      - name: body
+        label: 正文
+        type: rich-text
+
+  # ===== 测验 =====
+  - name: quizzes
+    label: 测验
+    type: collection
+    path: src/content/quizzes
+    format: json
+    filename: "{fields.slug}-{fields.lang}.json"
+    view:
+      primary: title
+      fields: [title, lang, order, draft]
+      sort: order
+    fields:
+      - name: title
+        label: 测验标题
+        type: string
+        required: true
+      - name: slug
+        label: 网址名称（英文小写，用 - 连接；英文版填跟中文版一样的）
+        type: string
+        required: true
+      - name: description
+        label: 简介
+        type: text
+      - name: lang
+        label: 语言
+        type: select
+        default: zh
+        options:
+          values:
+            - { name: zh, label: 中文 }
+            - { name: en, label: English }
+      - name: order
+        label: 排序（数字小的排前面）
+        type: number
+        default: 1
+      - name: youtubeId
+        label: 对应的 YouTube 视频 ID（可留空）
+        type: string
+      - name: draft
+        label: 草稿（打勾就不会出现在网站上）
+        type: boolean
+        default: false
+      - name: questions
+        label: 题目
+        type: object
+        list: true
+        fields:
+          - name: question
+            label: 题目
+            type: string
+            required: true
+          - name: options
+            label: 选项
+            type: string
+            list: true
+          - name: answer
+            label: 正确答案是第几个选项（从 1 开始数）
+            type: number
+            required: true
+          - name: explanation
+            label: 解释（答完后显示）
+            type: text
+
+  # ===== 标本图库 =====
+  - name: specimens
+    label: 标本图库
+    type: collection
+    path: src/content/specimens
+    format: yaml-frontmatter
+    filename: "{fields.slug}.md"
+    view:
+      primary: name
+      fields: [name, type, location]
+    fields:
+      - name: name
+        label: 名称（中文）
+        type: string
+        required: true
+      - name: nameEn
+        label: 英文名称
+        type: string
+      - name: slug
+        label: 文件名称（英文小写，用 - 连接）
+        type: string
+        required: true
+      - name: type
+        label: 类型
+        type: select
+        default: igneous
+        options:
+          values:
+            - { name: igneous, label: 火成岩 }
+            - { name: sedimentary, label: 沉积岩 }
+            - { name: metamorphic, label: 变质岩 }
+            - { name: mineral, label: 矿物 }
+            - { name: fossil, label: 化石 }
+      - name: location
+        label: 产地
+        type: string
+      - name: image
+        label: 照片
+        type: image
+        required: true
+      - name: date
+        label: 拍摄日期
+        type: date
+      - name: body
+        label: 说明
+        type: rich-text
+
+  # ===== 视频系列分类 =====
+  - name: videos
+    label: 视频分类
+    type: file
+    path: src/data/videos.json
+    format: json
+    fields:
+      - name: videos
+        label: 视频（网站会自动抓最新视频；这里用来指定系列和英文标题）
+        type: object
+        list: true
+        fields:
+          - name: youtubeId
+            label: YouTube 视频 ID
+            type: string
+          - name: title
+            label: 中文标题
+            type: string
+          - name: titleEn
+            label: 英文标题
+            type: string
+          - name: series
+            label: 系列
+            type: select
+            options:
+              values:
+                - { name: rocks, label: 岩石 }
+                - { name: seismology, label: 地震 }
+                - { name: landforms, label: 地貌 }
+                - { name: quakes, label: 历史大地震 }
+                - { name: news, label: 真实事件 }
+                - { name: vlog, label: Vlog }
+                - { name: channel, label: 频道 }
+                - { name: other, label: 其他 }
+          - name: date
+            label: 发布日期（只在抓不到 YouTube 时使用）
+            type: string
+
+  # ===== 首页"你知道吗"卡片 =====
+  - name: facts
+    label: 你知道吗卡片
+    type: file
+    path: src/data/facts.json
+    format: json
+    fields:
+      - name: facts
+        label: 卡片
+        type: object
+        list: true
+        fields:
+          - name: question
+            label: 问题（中文）
+            type: string
+          - name: answer
+            label: 答案（中文）
+            type: text
+          - name: questionEn
+            label: 问题（英文）
+            type: string
+          - name: answerEn
+            label: 答案（英文）
+            type: text
+          - name: icon
+            label: 图标
+            type: select
+            default: question
+            options:
+              values:
+                - { name: question, label: 问号 }
+                - { name: wave, label: 地震波 }
+                - { name: water, label: 水 }
+
+  # ===== 关于我 =====
+  - name: about-zh
+    label: 关于我（中文）
+    type: file
+    path: src/content/pages/about-zh.md
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: 标题, type: string }
+      - { name: photo, label: 照片, type: image }
+      - { name: body, label: 内容, type: rich-text }
+  - name: about-en
+    label: 关于我（英文）
+    type: file
+    path: src/content/pages/about-en.md
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Title, type: string }
+      - { name: photo, label: Photo, type: image }
+      - { name: body, label: Content, type: rich-text }
+
+  # ===== 网站基本设定 =====
+  - name: site
+    label: 网站设定
+    type: file
+    path: src/data/site.json
+    format: json
+    fields:
+      - { name: logoText, label: 左上角名称, type: string }
+      - { name: logoTextAlt, label: 左上角第二行（英文大写）, type: string }
+      - { name: author, label: 文章作者名, type: string }
+      - { name: kicker, label: 首页大标题上方的小字, type: string }
+      - { name: youtubeChannelId, label: YouTube 频道 ID（UC 开头那一串）, type: string }
+      - { name: youtubeUrl, label: YouTube 频道网址, type: string }
+      - { name: instagramUrl, label: Instagram 网址（可留空）, type: string }
+      - { name: linkedinUrl, label: LinkedIn 网址（可留空）, type: string }
+      - { name: email, label: 联络 Email（可留空）, type: string }
+      - { name: heroTitle, label: 首页大标题（中文）, type: string }
+      - { name: heroTitleEn, label: 首页大标题（英文）, type: string }
+      - { name: heroTagline, label: 首页金色副标题, type: string }
+      - { name: heroText, label: 首页介绍（中文）, type: text }
+      - { name: heroTextEn, label: 首页介绍（英文）, type: text }
+
+  # ===== 网站上的固定文字（按钮、标题、副标题） =====
+  - name: ui
+    label: 网站文字（按钮、标题）
+    type: file
+    path: src/data/ui.json
+    format: json
+    fields:
+      - name: subscribe
+        label: "按钮 · 订阅频道"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: location
+        label: "标本页 · 「产地」"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: gallerySub
+        label: "标本页 · 副标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: close
+        label: "标本页 · 关闭按钮"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: galleryEmpty
+        label: "标本页 · 还没有照片时"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: all
+        label: "博客页 · 「全部」分类按钮"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: enFallback
+        label: "博客页 · 部分文章只有中文的提示"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: noPosts
+        label: "博客页 · 没有文章时"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: wrong
+        label: "测验 · 答错了"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: correct
+        label: "测验 · 答对了"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: backToQuizzes
+        label: "测验 · 回到全部测验"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: start
+        label: "测验 · 开始测验"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: result
+        label: "测验 · 看结果"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: score
+        label: "测验 · 你的成绩"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: next
+        label: "测验 · 下一题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: retry
+        label: "测验 · 再来一次"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: questions
+        label: "测验页 · 「题」"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: quizFallback
+        label: "测验页 · 部分测验只有中文的提示"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: quizSub
+        label: "测验页 · 副标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: gallery
+        label: "导航 · 标本"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: blog
+        label: "导航 · 博客"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: quiz
+        label: "导航 · 测验"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: monitor
+        label: "导航 · 地震监测"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: about
+        label: "导航 · 关于"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: videos
+        label: "导航 · 视频"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: menu
+        label: "导航 · 手机选单按钮（读屏用）"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: home
+        label: "导航 · 首页"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: quakesCount
+        label: "地震监测 · 「次地震」"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: lastUpdated
+        label: "地震监测 · 「更新时间」"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: depth
+        label: "地震监测 · 「深度」"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: pastDay25
+        label: "地震监测 · 24 小时 M2.5+"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: pastDay45
+        label: "地震监测 · 24 小时 M4.5+"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: pastWeek45
+        label: "地震监测 · 7 天 M4.5+"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: monitorTitle
+        label: "地震监测 · 大标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: seasia
+        label: "地震监测 · 东南亚"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: loadError
+        label: "地震监测 · 读取失败"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: loading
+        label: "地震监测 · 读取中"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: noQuakes
+        label: "地震监测 · 没有地震时"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: global
+        label: "地震监测 · 全球"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: japan
+        label: "地震监测 · 日本周边"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: dataSource
+        label: "地震监测 · 数据来源"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: monitorText
+        label: "地震监测 · 说明文字"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: monitorKicker
+        label: "地震监测 · 小标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: siteDescription
+        label: "全站 · 网站简介（Google 搜索结果里显示）"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: siteName
+        label: "全站 · 网站名称（浏览器分页标题）"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: videosSub
+        label: "视频页 · 副标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: dyk
+        label: "首页 · 「你知道吗」标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: dykSub
+        label: "首页 · 「你知道吗」副标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: openMonitor
+        label: "首页 · 打开地震监测按钮"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: aboutTitle
+        label: "首页 · 关于我卡片标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: homeAboutText
+        label: "首页 · 关于我卡片内容"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: seeAllPosts
+        label: "首页 · 看全部文章"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: readMore
+        label: "首页 · 了解更多链接"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: readBlog
+        label: "首页 · 阅读博客按钮"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: latestVideos
+        label: "首页 · 最新视频标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: latestVideosSub
+        label: "首页 · 最新视频副标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: blogSub
+        label: "首页/博客页 · 博客副标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: seeAllYoutube
+        label: "首页/视频页 · 到 YouTube 看全部"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: thisVideo
+        label: "文章 · 「本期视频」"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: toc
+        label: "文章 · 「本文目录」"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: minRead
+        label: "文章 · 「分钟阅读」"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: videoWriteup
+        label: "文章 · 「视频文字版」标签"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: related
+        label: "文章 · 「相关文章」"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: postVideoBox
+        label: "文章 · 侧边订阅框标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: readOtherLang
+        label: "文章 · 切换另一种语言版本的链接"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: watchOnYoutube
+        label: "文章 · 在 YouTube 观看按钮"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }

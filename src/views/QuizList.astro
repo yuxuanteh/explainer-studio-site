@@ -1,0 +1,45 @@
+---
+import Base from '../layouts/Base.astro';
+import { getQuizzesForLang } from '../lib/quizzes';
+import { t, url, type Lang } from '../lib/i18n';
+import { slugOf } from '../lib/twins';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const { quizzes, fallback } = await getQuizzesForLang(lang);
+---
+<Base lang={lang} title={t(lang, 'quiz')} active="quiz">
+  <section class="sec-dark banner">
+    <div class="wrap">
+      <span class="kicker">Quiz</span>
+      <h1 class="page-title">{t(lang, 'quiz')}</h1>
+      <p>{t(lang, 'quizSub')}</p>
+    </div>
+  </section>
+  <section class="sec-light section">
+    <div class="wrap">
+      {fallback && <p class="note">{t(lang, 'quizFallback')}</p>}
+      <div class="grid">
+        {quizzes.map((q, i) => (
+          <a class="qcard" href={url(q.data.lang, `/quiz/${slugOf(q)}`)}>
+            <span class="num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="title">{q.data.title}</span>
+            {q.data.description && <span class="desc">{q.data.description}</span>}
+            <span class="foot">{q.data.questions.length} {t(lang, 'questions')} · {t(lang, 'start')} →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .banner { padding: 64px 0 56px; }
+  .banner p { color: var(--muted); margin: 10px 0 0; font-size: 17px; }
+  .banner h1 { margin-top: 8px; }
+  .note { color: var(--muted); margin: 0 0 24px; }
+  .qcard { display: flex; flex-direction: column; gap: 10px; padding: 26px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; text-decoration: none; color: var(--fg); min-height: 220px; transition: transform .2s, border-color .2s; }
+  .qcard:hover { transform: translateY(-3px); border-color: var(--accent); opacity: 1; }
+  .num { font-family: var(--font-display); font-weight: 700; font-size: 32px; color: var(--accent); }
+  .title { font-weight: 700; font-size: 20px; line-height: 1.45; }
+  .desc { color: var(--muted); font-size: 15px; line-height: 1.7; }
+  .foot { margin-top: auto; font-weight: 700; color: var(--accent); font-size: 15px; }
+</style>

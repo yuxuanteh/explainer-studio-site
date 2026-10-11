@@ -1,0 +1,130 @@
+---
+import Base from '../layouts/Base.astro';
+import type { CollectionEntry } from 'astro:content';
+import { t, url, type Lang } from '../lib/i18n';
+import { getQuizzes } from '../lib/quizzes';
+import { slugOf, findTwin } from '../lib/twins';
+interface Props { quiz: CollectionEntry<'quizzes'>; lang: Lang }
+const { quiz, lang } = Astro.props;
+const d = quiz.data;
+// 另一种语言的版本（有的话，中文/EN 按钮直接跳过去）
+const twin = findTwin(quiz, await getQuizzes());
+const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
+const altHref = twin ? url(otherLang, `/quiz/${slugOf(twin)}`) : url(otherLang, '/quiz');
+const labels = {
+  next: t(lang, 'next'), result: t(lang, 'result'), retry: t(lang, 'retry'),
+  correct: t(lang, 'correct'), wrong: t(lang, 'wrong'), score: t(lang, 'score'),
+};
+---
+<Base lang={lang} title={d.title} description={d.description} active="quiz" altHref={altHref}>
+  <section class="sec-dark banner">
+    <div class="wrap narrow">
+      <a class="back" href={url(lang, '/quiz')}>← {t(lang, 'backToQuizzes')}</a>
+      <h1>{d.title}</h1>
+      {d.description && <p>{d.description}</p>}
+    </div>
+  </section>
+  <section class="sec-light section">
+    <div class="wrap narrow">
+      <div class="quiz" id="quiz">
+        <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+        <p class="step" id="step"></p>
+        <h2 class="question" id="question"></h2>
+        <div class="options" id="options"></div>
+        <div class="feedback" id="feedback" aria-live="polite" hidden></div>
+        <button class="btn btn-gold next" id="next" type="button" hidden></button>
+      </div>
+      <div class="done" id="done" hidden>
+        <p class="kicker">{labels.score}</p>
+        <p class="big" id="score"></p>
+        <button class="btn btn-gold" id="retry" type="button">{labels.retry}</button>
+        <a class="btn btn-ghost" href={url(lang, '/quiz')}>{t(lang, 'backToQuizzes')}</a>
+      </div>
+    </div>
+  </section>
+  <script type="application/json" id="quiz-data" set:html={JSON.stringify({ questions: d.questions, labels })}></script>
+</Base>
+
+<style>
+  .narrow { max-width: 760px; }
+  .banner { padding: 48px 0; }
+  .banner h1 { margin: 16px 0 0; font-family: var(--font-cjk-serif); font-weight: 900; font-size: clamp(28px, 4.5vw, 42px); }
+  .banner p { color: var(--muted); margin: 10px 0 0; font-size: 17px; }
+  .back { display: inline-block; padding: 8px 0; text-decoration: none; font-weight: 700; }
+  .progress { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .bar { height: 100%; width: 0; background: var(--gold); transition: width .3s; }
+  .step { color: var(--muted); font-weight: 700; margin: 20px 0 6px; font-size: 14px; }
+  .question { margin: 0 0 24px; font-family: var(--font-cjk-serif); font-size: clamp(22px, 3vw, 28px); line-height: 1.5; color: #1A160C; }
+  .options { display: flex; flex-direction: column; gap: 12px; }
+  .options :global(button) { text-align: left; min-height: 56px; padding: 14px 18px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); color: var(--fg); font-size: 17px; font-weight: 500; }
+  .options :global(button:hover:not(:disabled)) { border-color: var(--accent); }
+  .options :global(button.right) { border-color: #2E7D4F; background: #E6F4EA; }
+  .options :global(button.wrong) { border-color: #B3261E; background: #FBE9E7; }
+  .options :global(button:disabled) { cursor: default; }
+  .feedback { margin-top: 20px; padding: 16px 20px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); line-height: 1.8; }
+  .feedback :global(strong) { display: block; margin-bottom: 4px; }
+  .next { margin-top: 24px; }
+  .done { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .big { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 64px; color: var(--accent); }
+</style>
+
+<script>
+  type Q = { question: string; options: string[]; answer: number; explanation: string };
+  const data = JSON.parse(document.getElementById('quiz-data')!.textContent || '{}') as { questions: Q[]; labels: Record<string, string> };
+  const $ = (id: string) => document.getElementById(id)!;
+  const L = data.labels;
+  let i = 0, score = 0;
+
+  function show() {
+    const q = data.questions[i];
+    $('bar').style.width = `${(i / data.questions.length) * 100}%`;
+    $('step').textContent = `${i + 1} / ${data.questions.length}`;
+    $('question').textContent = q.question;
+    $('feedback').hidden = true;
+    $('next').hidden = true;
+    const box = $('options');
+    box.innerHTML = '';
+    q.options.forEach((opt, idx) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = opt;
+      b.addEventListener('click', () => pick(idx + 1, b));
+      box.appendChild(b);
+    });
+  }
+
+  function pick(n: number, btn: HTMLButtonElement) {
+    const q = data.questions[i];
+    const buttons = [...$('options').querySelectorAll('button')];
+    buttons.forEach((b) => (b.disabled = true));
+    buttons[q.answer - 1]?.classList.add('right');
+    const ok = n === q.answer;
+    if (ok) score++; else btn.classList.add('wrong');
+    const fb = $('feedback');
+    fb.innerHTML = '';
+    const s = document.createElement('strong');
+    s.textContent = ok ? L.correct : L.wrong;
+    fb.append(s, document.createTextNode(q.explanation || ''));
+    fb.hidden = false;
+    const next = $('next') as HTMLButtonElement;
+    next.textContent = i < data.questions.length - 1 ? L.next : L.result;
+    next.hidden = false;
+    next.focus();
+  }
+
+  $('next').addEventListener('click', () => {
+    if (i < data.questions.length - 1) { i++; show(); }
+    else {
+      $('quiz').hidden = true;
+      $('done').hidden = false;
+      $('score').textContent = `${score} / ${data.questions.length}`;
+    }
+  });
+  $('retry').addEventListener('click', () => {
+    i = 0; score = 0;
+    $('done').hidden = true;
+    $('quiz').hidden = false;
+    show();
+  });
+  show();
+</script>

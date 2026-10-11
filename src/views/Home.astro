@@ -1,0 +1,174 @@
+---
+import Base from '../layouts/Base.astro';
+import VideoCard from '../components/VideoCard.astro';
+import PostCard from '../components/PostCard.astro';
+import QuakeList from '../components/QuakeList.astro';
+import site from '../data/site.json';
+import facts from '../data/facts.json';
+import { getVideos } from '../lib/videos';
+import { getPostsForLang } from '../lib/posts';
+import { t, url, asset, type Lang } from '../lib/i18n';
+import { getEntry } from 'astro:content';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const videos = (await getVideos()).slice(0, 4);
+const { posts, fallback } = await getPostsForLang(lang);
+// 「关于我」卡片的照片 = 关于页上传的照片（Pages CMS → 关于我）
+const aboutPhoto = (await getEntry('pages', `about-${lang}`))?.data.photo;
+const latestPosts = posts.slice(0, 3);
+const icons: Record<string, string> = {
+  question: 'M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01',
+  wave: 'M2 12h3l2-6 4 12 3-9 2 3h6',
+  water: 'M3 18c3-2 6-2 9 0s6 2 9 0M3 13c3-2 6-2 9 0s6 2 9 0',
+};
+---
+<Base lang={lang} active="home">
+  <!-- 首页大图 -->
+  <section class="hero sec-darker">
+    <div class="strata" aria-hidden="true">
+      <div style="flex-grow:18;background:#2D2414"></div>
+      <div style="flex-grow:9;background:#4A3A22"></div>
+      <div style="flex-grow:5;background:#6B5332"></div>
+      <div style="flex-grow:1.5;background:#F2B90D"></div>
+      <div style="flex-grow:12;background:#3B3020"></div>
+      <div style="flex-grow:7;background:#5A4A33"></div>
+      <div style="flex-grow:14;background:#2A2418"></div>
+    </div>
+    <div class="hero-inner wrap">
+      <span class="kicker">{site.kicker}</span>
+      <h1>{lang === 'zh' ? site.heroTitle : site.heroTitleEn}<br /><em>{site.heroTagline}</em></h1>
+      <p>{lang === 'zh' ? site.heroText : site.heroTextEn}</p>
+      <div class="hero-btns">
+        <a class="btn btn-gold" href={site.youtubeUrl}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9.5l5 2.5-5 2.5z" fill="currentColor"/></svg>
+          {t(lang, 'subscribe')}
+        </a>
+        <a class="btn btn-ghost" href={url(lang, '/blog')}>{t(lang, 'readBlog')} →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 最新视频（深色） -->
+  <section class="section sec-dark">
+    <div class="wrap">
+      <div class="sec-head">
+        <div><h2>{t(lang, 'latestVideos')}</h2><p>{t(lang, 'latestVideosSub')}</p></div>
+        <a href={url(lang, '/videos')}>{t(lang, 'videos')} →</a>
+      </div>
+      <div class="grid">{videos.map((v) => <VideoCard video={v} lang={lang} />)}</div>
+    </div>
+  </section>
+
+  <!-- 博客（浅色） -->
+  <section class="section sec-light">
+    <div class="wrap">
+      <div class="sec-head">
+        <div><h2>{t(lang, 'blog')}</h2><p>{t(lang, 'blogSub')}</p></div>
+        <a href={url(lang, '/blog')}>{t(lang, 'seeAllPosts')} →</a>
+      </div>
+      {fallback && <p class="note">{t(lang, 'enFallback')}</p>}
+      {latestPosts.length
+        ? <div class="grid-wide">{latestPosts.map((p) => <PostCard post={p} lang={lang} />)}</div>
+        : <p class="note">{t(lang, 'noPosts')}</p>}
+    </div>
+  </section>
+
+  <!-- 地震监测预告（更深色） -->
+  <section class="section sec-darker monitor">
+    <div class="wrap monitor-inner">
+      <div class="monitor-text">
+        <span class="kicker live">{t(lang, 'monitorKicker')}</span>
+        <h2>{t(lang, 'monitorTitle')}</h2>
+        <p>{t(lang, 'monitorText')}</p>
+        <a class="btn btn-gold" href={url(lang, '/monitor')}>{t(lang, 'openMonitor')} →</a>
+      </div>
+      <div class="monitor-list"><QuakeList lang={lang} limit={6} /></div>
+    </div>
+  </section>
+
+  <!-- 你知道吗（浅色） -->
+  <section class="section sec-light">
+    <div class="wrap center">
+      <h2 class="page-title">{t(lang, 'dyk')}</h2>
+      <p class="muted">{t(lang, 'dykSub')}</p>
+      <div class="flip-grid">
+        {facts.facts.map((f) => (
+          <button class="flip" type="button" aria-pressed="false">
+            <span class="face front">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                {f.icon === 'question' && <circle cx="12" cy="12" r="9" />}
+                {f.icon === 'water' && <circle cx="12" cy="6" r="2.5" />}
+                <path d={icons[f.icon] ?? icons.question} />
+              </svg>
+              <span class="q">{lang === 'zh' ? f.question : f.questionEn}</span>
+            </span>
+            <span class="face back">{lang === 'zh' ? f.answer : f.answerEn}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 关于（浅色） -->
+  <section class="sec-light about">
+    <div class="wrap">
+      <div class="about-card">
+        {aboutPhoto
+          ? <a class="avatar" href={url(lang, '/about')} tabindex="-1" aria-hidden="true"><img src={asset(aboutPhoto)} alt="" loading="lazy" /></a>
+          : <div class="ph avatar" aria-hidden="true">GS</div>}
+        <div>
+          <h2>{t(lang, 'aboutTitle')}</h2>
+          <p>{t(lang, 'homeAboutText')}</p>
+          <a href={url(lang, '/about')}>{t(lang, 'readMore')} →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { position: relative; overflow: hidden; }
+  .strata { position: absolute; left: 0; right: 0; bottom: 0; height: 120px; display: flex; flex-direction: column; justify-content: flex-end; opacity: .55; }
+  .strata > div { flex: 1 1 auto; }
+  .hero-inner { position: relative; max-width: 960px; padding-top: 112px; padding-bottom: 180px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+  .hero h1 { margin: 0; font-family: var(--font-serif); font-weight: 900; font-size: clamp(40px, 7vw, 84px); line-height: 1.12; color: #fff; }
+  .hero h1 em { color: var(--gold); font-weight: 700; }
+  .hero p { margin: 0; max-width: 620px; font-size: clamp(17px, 2vw, 19px); line-height: 1.8; color: #E5DCC3; }
+  .hero-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 10px; }
+  @media (max-width: 640px) { .hero-inner { padding-top: 64px; padding-bottom: 160px; } .flip { min-height: 180px; } }
+
+  .note { color: var(--muted); margin: -12px 0 28px; }
+  .monitor { border-top: 1px solid #2D2414; border-bottom: 1px solid #2D2414; }
+  .monitor-inner { display: flex; flex-wrap: wrap; gap: 40px; align-items: center; }
+  .monitor-text { flex: 1 1 340px; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+  .monitor-text h2 { margin: 0; font-family: var(--font-display); font-size: clamp(30px, 4vw, 38px); }
+  .monitor-text p { margin: 0; font-size: 17px; line-height: 1.8; color: var(--muted); }
+  .live { color: var(--cyan); }
+  .monitor-list { flex: 2 1 480px; min-width: 0; }
+
+  .center { text-align: center; }
+  .muted { color: var(--muted); margin: 10px 0 0; }
+  .flip-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 24px; margin-top: 40px; }
+  .flip { position: relative; min-height: 240px; border: 0; padding: 0; background: transparent; perspective: 1000px; color: var(--fg); }
+  .face { position: absolute; inset: 0; border-radius: 16px; padding: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform .6s; }
+  .front { background: var(--card); border: 1px solid var(--line); color: var(--accent); }
+  .front .q { color: var(--fg); font-weight: 700; font-size: 20px; }
+  .back { background: var(--dark); color: var(--dark-text); border: 2px solid var(--gold); transform: rotateY(180deg); font-size: 16px; line-height: 1.75; }
+  .flip[aria-pressed="true"] .front { transform: rotateY(180deg); }
+  .flip[aria-pressed="true"] .back { transform: rotateY(360deg); }
+
+  .about { padding-bottom: 88px; }
+  .about-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: clamp(24px, 4vw, 40px); display: flex; flex-wrap: wrap; gap: 32px; align-items: center; }
+  .about-card > div:last-child { flex: 1 1 380px; }
+  .avatar { flex: 0 0 120px; height: 120px; border-radius: 50%; border: 2px solid #D9A60B; font-family: var(--font-display); font-weight: 700; font-size: 32px; overflow: hidden; }
+  /* 关于页的照片：对准脸部、放大一点（照片是全身照） */
+  .avatar img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 38%; transform: scale(1.8); transform-origin: 43% 42%; }
+  .about-card h2 { margin: 0 0 12px; font-family: var(--font-cjk-serif); font-weight: 900; font-size: 28px; }
+  .about-card p { margin: 0 0 12px; font-size: 17px; line-height: 1.85; color: var(--paper-body); }
+  .about-card a { font-weight: 700; display: inline-block; padding: 8px 0; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.flip').forEach((b) =>
+    b.addEventListener('click', () => b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'))));
+</script>

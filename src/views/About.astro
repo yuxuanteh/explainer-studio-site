@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import { getEntry, render } from 'astro:content';
+import site from '../data/site.json';
+import { t, asset, type Lang } from '../lib/i18n';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const page = await getEntry('pages', `about-${lang}`);
+if (!page) throw new Error(`Missing src/content/pages/about-${lang}.md`);
+const { Content } = await render(page);
+---
+<Base lang={lang} title={t(lang, 'about')} active="about">
+  <section class="sec-light">
+    <div class="wrap about">
+      <div class="photo-col">
+        {page.data.photo
+          ? <img class="photo" src={asset(page.data.photo)} alt="" />
+          : <div class="ph photo" aria-hidden="true">{site.logoTextAlt.slice(0, 2)}</div>}
+        <div class="links">
+          <a class="btn btn-gold" href={site.youtubeUrl}>{t(lang, 'subscribe')}</a>
+          {site.instagramUrl && <a class="btn btn-ghost" href={site.instagramUrl}>Instagram</a>}
+          {site.linkedinUrl && <a class="btn btn-ghost" href={site.linkedinUrl}>LinkedIn</a>}
+          {site.email && <a class="btn btn-ghost" href={`mailto:${site.email}`}>Email</a>}
+        </div>
+      </div>
+      <div class="text">
+        <h1>{page.data.title}</h1>
+        <div class="prose"><Content /></div>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .about { display: flex; flex-wrap: wrap; gap: 56px; padding-top: 72px; padding-bottom: 96px; align-items: flex-start; }
+  .photo-col { flex: 0 1 280px; display: flex; flex-direction: column; gap: 20px; }
+  .photo { width: 100%; max-width: min(280px, 50vw); aspect-ratio: 1; border-radius: 50%; object-fit: cover; object-position: 45% 30%; border: 3px solid #D9A60B; font-family: var(--font-display); font-weight: 700; font-size: 56px; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; }
+  .text { flex: 999 1 440px; min-width: 0; max-width: 720px; }
+  h1 { margin: 0 0 24px; font-family: var(--font-cjk-serif); font-weight: 900; font-size: clamp(30px, 4.5vw, 44px); color: #1A160C; }
+  .prose { font-size: 18px; line-height: 1.95; color: var(--paper-body); }
+  .prose :global(p) { margin: 0 0 20px; }
+  .prose :global(h2) { margin: 36px 0 14px; font-family: var(--font-cjk-serif); font-size: 24px; color: #1A160C; }
+  .prose :global(ul) { padding-left: 1.3em; }
+  .prose :global(li) { margin-bottom: 8px; }
+  .prose :global(strong) { color: #1A160C; }
+</style>

@@ -1,0 +1,10 @@
+---
+import Post from '../../views/Post.astro';
+import { getPosts } from '../../lib/posts';
+import { slugOf } from '../../lib/twins';
+export async function getStaticPaths() {
+  return (await getPosts('zh')).map((post) => ({ params: { slug: slugOf(post) }, props: { post } }));
+}
+const { post } = Astro.props;
+---
+<Post post={post} lang="zh" />

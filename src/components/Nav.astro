@@ -1,0 +1,75 @@
+---
+import site from '../data/site.json';
+import { t, url, asset, switchLangPath, type Lang } from '../lib/i18n';
+interface Props { lang: Lang; active?: string; altHref?: string }
+const { lang, active, altHref } = Astro.props;
+const langHref = (to: Lang) => (to !== lang && altHref) ? altHref : switchLangPath(Astro.url.pathname, to);
+const links = [
+  { key: 'home', path: '/' },
+  { key: 'videos', path: '/videos' },
+  { key: 'blog', path: '/blog' },
+  { key: 'monitor', path: '/monitor' },
+  { key: 'quiz', path: '/quiz' },
+  { key: 'gallery', path: '/gallery' },
+  { key: 'about', path: '/about' },
+] as const;
+const path = Astro.url.pathname;
+---
+<header class="nav sec-dark">
+  <div class="wrap nav-inner">
+    <a class="logo" href={url(lang, '/')}>
+      <img class="logo-mark" src={asset('logo-mark.svg')} width="36" height="36" alt="" />
+      <span class="logo-zh">{site.logoText}</span>
+      <span class="logo-en">{site.logoTextAlt}</span>
+    </a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      <span class="sr-only">{t(lang, 'menu')}</span>
+    </button>
+    <nav id="site-menu" class="menu" aria-label="Main">
+      {links.map((l) => (
+        <a href={url(lang, l.path)} aria-current={active === l.key ? 'page' : undefined}>{t(lang, l.key)}</a>
+      ))}
+      <div class="lang" role="group" aria-label="Language">
+        <a href={langHref('zh')} aria-current={lang === 'zh' ? 'true' : undefined} lang="zh">中文</a>
+        <a href={langHref('en')} aria-current={lang === 'en' ? 'true' : undefined} lang="en">EN</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .nav { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--dark-border); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 68px; }
+  .logo { display: flex; align-items: center; gap: 10px; color: var(--dark-text); text-decoration: none; min-height: 44px; }
+  .logo-mark { width: 36px; height: 36px; flex: none; }
+  .logo-zh { font-family: var(--font-cjk-serif); font-weight: 900; font-size: 21px; }
+  .logo-en { font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: .12em; }
+  .menu { display: flex; align-items: center; gap: 2px; }
+  .menu > a { color: var(--dark-text); text-decoration: none; padding: 12px; font-size: 15px; font-weight: 500; white-space: nowrap; }
+  .menu > a[aria-current="page"] { color: var(--gold); }
+  .lang { display: flex; border: 1px solid var(--dark-border); border-radius: 8px; overflow: hidden; margin-left: 8px; }
+  .lang a { display: flex; align-items: center; padding: 0 14px; min-height: 40px; color: var(--dark-muted); text-decoration: none; font-weight: 700; font-size: 14px; }
+  .lang a[aria-current="true"] { background: var(--gold); color: #1A160C; }
+  .menu-btn { display: none; background: transparent; color: var(--dark-text); border: 1px solid var(--dark-border); border-radius: 8px; width: 44px; height: 44px; align-items: center; justify-content: center; }
+
+  @media (max-width: 1000px) {
+    .menu-btn { display: inline-flex; }
+    .menu { display: none; position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; align-items: stretch; gap: 0; background: var(--dark); border-bottom: 1px solid var(--dark-border); padding: 8px 16px 16px; }
+    .menu.open { display: flex; }
+    .menu > a { padding: 14px 8px; border-bottom: 1px solid #2D2414; font-size: 16px; }
+    .lang { margin: 12px 0 0; align-self: flex-start; }
+  }
+  @media (max-width: 400px) { .logo-en { display: none; } }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.menu-btn').forEach((btn) => {
+    const menu = document.getElementById(btn.getAttribute('aria-controls') || '');
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      menu?.classList.toggle('open', !open);
+    });
+  });
+</script>
