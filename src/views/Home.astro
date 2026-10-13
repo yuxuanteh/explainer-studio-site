@@ -11,7 +11,7 @@ import { t, url, asset, type Lang } from '../lib/i18n';
 import { getEntry } from 'astro:content';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
-const videos = (await getVideos()).slice(0, 4);
+const videos = (await getVideos()).filter((v) => v.format !== 'short').slice(0, 4);   // shorts live on the videos page
 const { posts, fallback } = await getPostsForLang(lang);
 // 「关于我」卡片的照片 = 关于页上传的照片（Pages CMS → 关于我）
 const aboutPhoto = (await getEntry('pages', `about-${lang}`))?.data.photo;

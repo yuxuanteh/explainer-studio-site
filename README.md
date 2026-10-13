@@ -51,6 +51,14 @@ Optional extras:
   under **Settings → Secrets and variables → Actions** as `CLAUDE_CODE_OAUTH_TOKEN`. Without the secret, the
   workflow just skips. The rules are in `scripts/translate-prompt.md`.
 
+## YouTube Shorts
+
+Shorts get their own **"In 60 Seconds"** section on the videos page, grouped by series, and they stay out of the
+main grid and the home page. The site recognises Shorts from your channel feed automatically. You can also
+mark one yourself: in Pages CMS → **视频分类**, add the video ID and set the type (类型) to *短片* (short), or put
+`"format": "short"` on its entry in `src/data/videos.json`. The section title and subtitle can be edited in
+**网站文字**. If there are no Shorts, the section is hidden.
+
 ## Visitor statistics (optional, free)
 
 The site can count visitors with **Cloudflare Web Analytics**. It uses no cookies, so you don't need a cookie

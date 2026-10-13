@@ -219,6 +219,13 @@ content:
           - name: date
             label: 发布日期（只在抓不到 YouTube 时使用）
             type: string
+          - name: format
+            label: 类型（短片会放进视频页的「60秒看懂」专区；网站也会自动认出 YouTube Shorts）
+            type: select
+            options:
+              values:
+                - { name: video, label: 正片 }
+                - { name: short, label: 短片（60秒看懂） }
 
   # ===== 首页"你知道吗"卡片 =====
   - name: facts
@@ -576,6 +583,18 @@ content:
           - { name: en, label: English, type: string }
       - name: videosSub
         label: "视频页 · 副标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: shortsTitle
+        label: "视频页 · 「60秒看懂」标题"
+        type: object
+        fields:
+          - { name: zh, label: 中文, type: string }
+          - { name: en, label: English, type: string }
+      - name: shortsSub
+        label: "视频页 · 「60秒看懂」副标题"
         type: object
         fields:
           - { name: zh, label: 中文, type: string }

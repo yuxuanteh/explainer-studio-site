@@ -6,7 +6,7 @@ const { video, lang } = Astro.props;
 const s = seriesNames[video.series as keyof typeof seriesNames] ?? seriesNames.other;
 const title = lang === 'en' && video.titleEn ? video.titleEn : video.title;
 ---
-<a class="vcard" href={video.href} data-series={video.series}>
+<a class:list={['vcard', { short: video.format === 'short' }]} href={video.href} data-series={video.series}>
   {video.thumb
     ? <img src={video.thumb} alt="" loading="lazy" width="480" height="270" />
     : <div class="ph thumb-ph">YouTube</div>}
@@ -19,6 +19,9 @@ const title = lang === 'en' && video.titleEn ? video.titleEn : video.title;
   .vcard { text-decoration: none; color: var(--fg); background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; transition: transform .2s, border-color .2s; }
   .vcard:hover { transform: translateY(-3px); border-color: var(--accent); opacity: 1; }
   .vcard img, .thumb-ph { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }  /* 裁掉 YouTube 缩图上下的黑边 */
+  .short img, .short .thumb-ph { aspect-ratio: 9 / 16; }   /* Shorts: the vertical frame sits in the middle of hqdefault */
+  .short .body { padding: 14px 14px 18px; }
+  .short .title { font-size: 15px; }
   .body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 8px; }
   .title { font-weight: 700; font-size: 18px; line-height: 1.5; }
 </style>

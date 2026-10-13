@@ -6,9 +6,15 @@ import { getVideos } from '../lib/videos';
 import { t, series as seriesNames, type Lang } from '../lib/i18n';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
-const videos = await getVideos();
+const all = await getVideos();
+const videos = all.filter((v) => v.format !== 'short');
+const shorts = all.filter((v) => v.format === 'short');
 const used = [...new Set(videos.map((v) => v.series))];
 const chips = (Object.keys(seriesNames) as (keyof typeof seriesNames)[]).filter((k) => used.includes(k));
+// 「60秒看懂」: shorts grouped by field, in the same order as the series list
+const shortGroups = (Object.keys(seriesNames) as (keyof typeof seriesNames)[])
+  .map((k) => ({ key: k, items: shorts.filter((v) => (seriesNames[v.series as keyof typeof seriesNames] ? v.series : 'other') === k) }))
+  .filter((g) => g.items.length);
 ---
 <Base lang={lang} title={t(lang, 'videos')} active="videos">
   <section class="sec-dark section">
@@ -26,9 +32,27 @@ const chips = (Object.keys(seriesNames) as (keyof typeof seriesNames)[]).filter(
       <div class="grid" id="video-grid">{videos.map((v) => <VideoCard video={v} lang={lang} />)}</div>
     </div>
   </section>
+  {shortGroups.length > 0 && (
+    <section class="section" id="shorts">
+      <div class="wrap">
+        <div class="sec-head">
+          <div><h2 class="page-title">{t(lang, 'shortsTitle')}</h2><p>{t(lang, 'shortsSub')}</p></div>
+        </div>
+        {shortGroups.map((g) => (
+          <div class="sgroup">
+            <h3 class="sgroup-title">{t(lang, 'shortsTitle')} · {seriesNames[g.key][lang]}</h3>
+            <div class="sgrid">{g.items.map((v) => <VideoCard video={v} lang={lang} />)}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
 </Base>
 <style>
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .sgroup + .sgroup { margin-top: 36px; }
+  .sgroup-title { font-size: 18px; margin: 0 0 16px; }
+  .sgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 18px; }
 </style>
 <script>
   const chips = document.querySelectorAll<HTMLButtonElement>('.chips .chip');

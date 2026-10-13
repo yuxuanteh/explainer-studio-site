@@ -260,5 +260,13 @@
   "watchOnYoutube": {
     "zh": "在 YouTube 观看",
     "en": "Watch on YouTube"
+  },
+  "shortsTitle": {
+    "zh": "60秒看懂",
+    "en": "In 60 Seconds"
+  },
+  "shortsSub": {
+    "zh": "一个问题，一分钟讲完。想知道更多，再看完整版。",
+    "en": "One question, answered in a minute. The full videos go deeper."
   }
 }
