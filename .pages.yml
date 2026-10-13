@@ -289,6 +289,7 @@ content:
       - { name: youtubeUrl, label: YouTube 频道网址, type: string }
       - { name: instagramUrl, label: Instagram 网址（可留空）, type: string }
       - { name: linkedinUrl, label: LinkedIn 网址（可留空）, type: string }
+      - { name: cloudflareAnalyticsToken, label: Cloudflare 访客统计代码（Web Analytics 的 token，可留空）, type: string }
       - { name: email, label: 联络 Email（可留空）, type: string }
       - { name: heroTitle, label: 首页大标题（中文）, type: string }
       - { name: heroTitleEn, label: 首页大标题（英文）, type: string }

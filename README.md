@@ -30,7 +30,7 @@ web editor.
 
 | What | Where |
 |---|---|
-| Name, links, home page text, YouTube channel ID | `src/data/site.json` (Pages CMS: 网站设定) |
+| Name, links, home page text, YouTube channel ID, analytics token | `src/data/site.json` (Pages CMS: 网站设定) |
 | Every button and heading, in both languages | `src/data/ui.json` (Pages CMS: 网站文字) |
 | Colours | the top of `src/styles/global.css` |
 | Fonts | the Google Fonts link in `src/layouts/Base.astro`, plus `--font-*` in `global.css` |
@@ -50,6 +50,21 @@ Optional extras:
   as a draft for you to check. Setting it up: run `claude setup-token` on your computer, then add the token
   under **Settings → Secrets and variables → Actions** as `CLAUDE_CODE_OAUTH_TOKEN`. Without the secret, the
   workflow just skips. The rules are in `scripts/translate-prompt.md`.
+
+## Visitor statistics (optional, free)
+
+The site can count visitors with **Cloudflare Web Analytics**. It uses no cookies, so you don't need a cookie
+banner, and it doesn't need your site to be hosted on Cloudflare.
+
+1. Sign up free at https://dash.cloudflare.com, then open **Analytics & Logs → Web Analytics → Add a site**.
+2. Enter your site's address (e.g. `yourname.github.io`) and choose the manual **JS snippet** option.
+3. Copy only the token: the value after `"token": "` in the snippet, a 32-character code.
+4. Paste it in Pages CMS → **网站设定** → *Cloudflare 访客统计代码* (or into `cloudflareAnalyticsToken` in
+   `src/data/site.json`) and save. After the rebuild, visits show up in the Cloudflare dashboard within a few
+   minutes.
+
+Leave the field empty to turn analytics off. Nothing is loaded then. The token is not a secret; it is visible in
+your page source anyway.
 
 ## Writing posts
 
