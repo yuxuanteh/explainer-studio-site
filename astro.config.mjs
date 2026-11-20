@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import { unified } from '@astrojs/markdown-remark';
 import rehypeFigures from './src/lib/rehype-figures.mjs';
 import rehypeBlog from './src/lib/rehype-blog.mjs';
 
@@ -11,5 +12,8 @@ export default defineConfig({
   base: process.env.BASE_PATH || '/',
   trailingSlash: 'ignore',
   // 文章图片（rehype-figures）+ 小知识框、参考资料编号（rehype-blog）
-  markdown: { rehypePlugins: [rehypeFigures, rehypeBlog] },
+  // Astro 7 默认用新的 Sätteri 处理器；这两个外挂要用 unified 处理器才会生效。
+  markdown: { processor: unified({ rehypePlugins: [rehypeFigures, rehypeBlog] }) },
+  // 保留以前的 HTML 压缩方式（Astro 7 默认的 'jsx' 会去掉行内元素之间的空格）
+  compressHTML: true,
 });

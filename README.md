@@ -5,7 +5,7 @@ channel, a blog, quizzes, a specimen / photo gallery, an About page, and an opti
 It runs on GitHub Pages, so there is no server and no cost, and you write posts in a web editor (Pages CMS).
 It started as the website of the 金釘子 GoldenSpike channel.
 
-It is built with Astro 5. The default languages are Chinese (the main language) and English (under `/en/`).
+It is built with Astro 7. The default languages are Chinese (the main language) and English (under `/en/`).
 
 ## The easy way: let Claude do it
 
@@ -86,7 +86,7 @@ your page source anyway.
 
 ## Preview on your own computer (optional)
 
-Install Node.js 22, then run `npm install` and `npm run dev`, and open http://localhost:4321.
+Install Node.js 22.23.4 or newer (or Node 24), then run `npm install` and `npm run dev`, and open http://localhost:4321.
 
 ## Licence
 
