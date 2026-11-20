@@ -1,6 +1,6 @@
 # Channel website (Explainer Studio template)
 
-Astro 5 static site, deployed to GitHub Pages by `.github/workflows/deploy.yml`, edited by the owner in Pages CMS
+Astro 7 static site, deployed to GitHub Pages by `.github/workflows/deploy.yml`, edited by the owner in Pages CMS
 (`.pages.yml`). Bilingual: `zh` default, `en` under `/en/`. See README.md "What to change where".
 
 - `git pull` before editing: Pages CMS commits straight to GitHub.
