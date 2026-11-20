@@ -25,14 +25,16 @@ jobs:
     env:
       HAS_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # 不把 GITHUB_TOKEN 留在 .git/config 里：Claude 运行时读不到它，只在最后 push 时临时用一下。
           persist-credentials: false
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
+          # 这个 job 带着 OAuth token 运行：不要依赖缓存（setup-node v5+ 见到 packageManager 字段会自动开缓存）。
+          package-manager-cache: false
 
       - id: find
         run: node scripts/find-missing-twins.mjs
